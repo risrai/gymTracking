@@ -2,152 +2,144 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Gym Activity Tracker</title>
+  <title>Gym Tracker</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Google Material Icons -->
+  <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 
   <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #6366f1;
+      --secondary: #22c55e;
+      --danger: #ef4444;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --muted: #64748b;
+    }
+
     body {
-      font-family: system-ui, sans-serif;
       margin: 0;
-      background: #f4f6f8;
+      font-family: system-ui, sans-serif;
+      background: var(--bg);
     }
 
     header {
-      background: #111;
-      color: #fff;
-      padding: 14px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      padding: 16px;
       text-align: center;
     }
 
     nav {
       display: flex;
       justify-content: center;
-      gap: 24px;
-      margin-top: 10px;
+      gap: 12px;
+      margin-top: 12px;
     }
 
     nav button {
-      background: none;
+      padding: 8px 16px;
+      border-radius: 999px;
       border: none;
-      color: #fff;
-      font-size: 16px;
       cursor: pointer;
+      font-size: 15px;
+      background: rgba(255,255,255,0.25);
+      color: white;
+      font-weight: 500;
+    }
+
+    nav button.active {
+      background: white;
+      color: var(--primary);
     }
 
     section {
       display: none;
-      padding: 16px;
     }
 
     section.active {
       display: block;
     }
 
+    .container {
+      max-width: 640px;
+      margin: auto;
+      padding: 16px;
+    }
+
+    h3 {
+      margin-top: 22px;
+      color: #0f172a;
+    }
+
     input, select {
       width: 100%;
-      padding: 10px;
+      padding: 11px;
       margin-top: 10px;
-      font-size: 16px;
+      font-size: 15px;
+      border-radius: 8px;
+      border: 1px solid #cbd5f5;
+      box-sizing: border-box;
     }
 
     button.primary {
       width: 100%;
-      margin-top: 14px;
+      margin-top: 16px;
       padding: 12px;
       font-size: 16px;
-      background: #111;
-      color: #fff;
+      border-radius: 10px;
+      background: var(--primary);
+      color: white;
       border: none;
       cursor: pointer;
     }
 
     .entry-card {
-      background: #fff;
-      border-radius: 8px;
-      margin-top: 10px;
+      background: var(--card);
+      border-radius: 14px;
       padding: 12px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+      margin-top: 12px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.06);
     }
 
-    .entry-card.compact {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .entry-main {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      overflow: hidden;
-      flex-wrap: nowrap;
-    }
-
-    .entry-main span {
-      white-space: nowrap;
-      font-size: 14px;
-    }
-
-    .entry-main .activity {
+    .entry-header {
       font-weight: 600;
-      max-width: 120px;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      margin-bottom: 6px;
     }
 
-    .entry-main .date {
-      color: #666;
-      font-size: 12px;
+    .set-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      font-size: 14px;
+      color: var(--muted);
     }
 
     .actions {
       display: flex;
-      gap: 14px;
-      flex-shrink: 0;
+      gap: 12px;
     }
 
     .material-symbols-outlined {
       cursor: pointer;
-      font-size: 22px;
+      font-size: 20px;
     }
 
-    .edit {
-      color: #1976d2;
-    }
-
-    .delete {
-      color: #d32f2f;
-    }
+    .edit { color: var(--secondary); }
+    .delete { color: var(--danger); }
 
     canvas {
-      background: #fff;
-      border-radius: 8px;
+      background: var(--card);
+      border-radius: 14px;
       padding: 10px;
-      margin-top: 12px;
+      margin-top: 14px;
     }
-	
-	.container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 0 14px;
-}
-input, select, button.primary {
-  box-sizing: border-box;
-}
-@media (min-width: 768px) {
-  .container {
-    padding: 0 24px;
-  }
-}
-
-
   </style>
 </head>
 
@@ -156,43 +148,40 @@ input, select, button.primary {
 <header>
   <h2>🏋️ Gym Tracker</h2>
   <nav>
-    <button onclick="showPage('log')">Log</button>
-    <button onclick="showPage('analysis')">Analysis</button>
+    <button id="logTab" class="active" onclick="showPage('log')">Log</button>
+    <button id="analysisTab" onclick="showPage('analysis')">Analysis</button>
   </nav>
 </header>
 
 <!-- LOG PAGE -->
 <section id="log" class="active">
-<div class="container">
-  <h3>Add Activity</h3>
+  <div class="container">
+    <h3>Add Exercise</h3>
 
-  <input type="date" id="dateInput">
-  <input list="activityList" id="activityInput" placeholder="Activity (e.g. Chest Press)">
-  <datalist id="activityList"></datalist>
+    <input type="date" id="dateInput">
+    <input list="activityList" id="activityInput" placeholder="Exercise (Bench Press)">
+    <datalist id="activityList"></datalist>
 
-  <select id="metricInput">
-    <option value="Weight">Max Weight (kg)</option>
-    <option value="Duration">Duration (min)</option>
-  </select>
+    <input type="number" id="repsInput" placeholder="Reps">
+    <input type="number" id="weightInput" placeholder="Weight (kg)">
 
-  <input type="number" id="valueInput" placeholder="Value">
+    <button class="primary" onclick="saveEntry()">Save Entry</button>
 
-  <button class="primary" onclick="saveEntry()">Save Entry</button>
-
-  <h3>Entries</h3>
-  <div id="entries"></div>
+    <h3>Entries</h3>
+    <div id="entries"></div>
+  </div>
 </section>
 
 <!-- ANALYSIS PAGE -->
 <section id="analysis">
-<div class="container">
-  <h3>Activity-wise Trend</h3>
-  <select id="analysisActivity" onchange="renderChart()"></select>
-  <canvas id="chart" height="220"></canvas>
+  <div class="container">
+    <h3>Progress (Max Weight)</h3>
+    <select id="analysisActivity" onchange="renderChart()"></select>
+    <canvas id="chart" height="220"></canvas>
 
-  <h3>Logs by Date</h3>
-  <input type="date" id="analysisDate" onchange="renderDateLogs()">
-  <div id="dateLogs"></div>
+    <h3>Logs by Date</h3>
+    <input type="date" id="analysisDate" onchange="renderDateLogs()">
+    <div id="dateLogs"></div>
   </div>
 </section>
 
@@ -208,21 +197,22 @@ input, select, button.primary {
   function showPage(id) {
     document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
     document.getElementById(id).classList.add("active");
+
+    logTab.classList.toggle("active", id === "log");
+    analysisTab.classList.toggle("active", id === "analysis");
+
     refreshUI();
   }
 
   function saveEntry() {
-    const activity = activityInput.value.trim();
-    const value = Number(valueInput.value);
-
-    if (!activity || !value) return;
-
     const entry = {
       date: dateInput.value,
-      activity,
-      metric: metricInput.value,
-      value
+      activity: activityInput.value.trim(),
+      reps: Number(repsInput.value),
+      weight: Number(weightInput.value)
     };
+
+    if (!entry.activity || !entry.reps || !entry.weight) return;
 
     if (editIndex !== null) {
       data[editIndex] = entry;
@@ -232,8 +222,124 @@ input, select, button.primary {
     }
 
     localStorage.setItem("gymData", JSON.stringify(data));
+    repsInput.value = "";
+    weightInput.value = "";
     activityInput.value = "";
-    valueInput.value = "";
+    refreshUI();
+  }
+
+  function groupByActivity(entries) {
+    return entries.reduce((acc, e, i) => {
+      acc[e.activity] = acc[e.activity] || [];
+      acc[e.activity].push({ ...e, index: i });
+      return acc;
+    }, {});
+  }
+
+  function renderEntries() {
+    entries.innerHTML = "";
+    const grouped = groupByActivity(data);
+
+    for (const activity in grouped) {
+      const card = document.createElement("div");
+      card.className = "entry-card";
+      card.innerHTML = `<div class="entry-header">${activity}</div>`;
+
+      grouped[activity].forEach(set => {
+        const row = document.createElement("div");
+        row.className = "set-row";
+        row.innerHTML = `
+          <span>${set.reps} reps × ${set.weight} kg (${set.date})</span>
+          <div class="actions">
+            <span class="material-symbols-outlined edit" onclick="editEntry(${set.index})">edit</span>
+            <span class="material-symbols-outlined delete" onclick="deleteEntry(${set.index})">delete</span>
+          </div>
+        `;
+        card.appendChild(row);
+      });
+
+      entries.appendChild(card);
+    }
+  }
+
+  function renderDateLogs() {
+    dateLogs.innerHTML = "";
+    const filtered = data.filter(d => d.date === analysisDate.value);
+    const grouped = groupByActivity(filtered);
+
+    for (const activity in grouped) {
+      const card = document.createElement("div");
+      card.className = "entry-card";
+      card.innerHTML = `<div class="entry-header">${activity}</div>`;
+
+      grouped[activity].forEach(set => {
+        const row = document.createElement("div");
+        row.className = "set-row";
+        row.innerHTML = `
+          <span>${set.reps} reps × ${set.weight} kg</span>
+          <div class="actions">
+            <span class="material-symbols-outlined edit" onclick="editEntry(${set.index})">edit</span>
+            <span class="material-symbols-outlined delete" onclick="deleteEntry(${set.index})">delete</span>
+          </div>
+        `;
+        card.appendChild(row);
+      });
+
+      dateLogs.appendChild(card);
+    }
+  }
+
+  function renderActivityLists() {
+    const unique = [...new Set(data.map(d => d.activity))];
+    activityList.innerHTML = unique.map(a => `<option value="${a}">`).join("");
+    analysisActivity.innerHTML =
+      `<option value="">Select exercise</option>` +
+      unique.map(a => `<option>${a}</option>`).join("");
+  }
+
+  function renderChart() {
+    const activity = analysisActivity.value;
+    if (!activity) return;
+
+    const maxByDate = {};
+    data.filter(d => d.activity === activity).forEach(d => {
+      maxByDate[d.date] = Math.max(maxByDate[d.date] || 0, d.weight);
+    });
+
+    const dates = Object.keys(maxByDate).sort((a,b) => new Date(a)-new Date(b));
+    const values = dates.map(d => maxByDate[d]);
+
+    if (chart) chart.destroy();
+
+    chart = new Chart(document.getElementById("chart"), {
+      type: "line",
+      data: {
+        labels: dates,
+        datasets: [{
+          data: values,
+          borderColor: "#4f46e5",
+          backgroundColor: "#6366f1",
+          tension: 0.35
+        }]
+      },
+      options: { plugins: { legend: { display: false } } }
+    });
+  }
+
+  function editEntry(i) {
+    const e = data[i];
+    dateInput.value = e.date;
+    activityInput.value = e.activity;
+    repsInput.value = e.reps;
+    weightInput.value = e.weight;
+    editIndex = i;
+    showPage("log");
+  }
+
+  function deleteEntry(i) {
+    if (!confirm("Delete this set?")) return;
+    data.splice(i, 1);
+    localStorage.setItem("gymData", JSON.stringify(data));
     refreshUI();
   }
 
@@ -242,115 +348,6 @@ input, select, button.primary {
     renderActivityLists();
     renderChart();
     renderDateLogs();
-  }
-
-  function renderEntries() {
-    entries.innerHTML = "";
-    data.forEach((e, i) => {
-      const div = document.createElement("div");
-      div.className = "entry-card compact";
-      div.innerHTML = `
-        <div class="entry-main">
-          <span class="activity">${e.activity}</span>
-          <span>${e.value} ${e.metric === "Weight" ? "kg" : "min"}</span>
-          <span class="date">${e.date}</span>
-        </div>
-        <div class="actions">
-          <span class="material-symbols-outlined edit" onclick="editEntry(${i})">edit</span>
-          <span class="material-symbols-outlined delete" onclick="deleteEntry(${i})">delete</span>
-        </div>
-      `;
-      entries.appendChild(div);
-    });
-  }
-
-  function editEntry(i) {
-    const e = data[i];
-    dateInput.value = e.date;
-    activityInput.value = e.activity;
-    metricInput.value = e.metric;
-    valueInput.value = e.value;
-    editIndex = i;
-    showPage("log");
-  }
-
-  function deleteEntry(i) {
-    if (!confirm("Delete this entry?")) return;
-    data.splice(i, 1);
-    localStorage.setItem("gymData", JSON.stringify(data));
-    refreshUI();
-  }
-
-  function renderActivityLists() {
-    const unique = [...new Set(data.map(d => d.activity))];
-    activityList.innerHTML = unique.map(a => `<option value="${a}">`).join("");
-    analysisActivity.innerHTML =
-      `<option value="">Select activity</option>` +
-      unique.map(a => `<option>${a}</option>`).join("");
-  }
-
-  function renderChart() {
-  const activity = analysisActivity.value;
-  if (!activity) return;
-
-  // Filter entries for the selected activity
-  const filtered = data
-    .filter(d => d.activity === activity)
-    .sort((a, b) => new Date(a.date) - new Date(b.date)); // 👈 key fix
-
-  const labels = filtered.map(d => d.date);
-  const values = filtered.map(d => d.value);
-
-  if (chart) chart.destroy();
-
-  chart = new Chart(document.getElementById("chart"), {
-    type: "line",
-    data: {
-      labels,
-      datasets: [{
-        label: activity,
-        data: values,
-        borderWidth: 2,
-        tension: 0.3,
-        fill: false
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        x: {
-          ticks: {
-            autoSkip: true,
-            maxTicksLimit: 6
-          }
-        }
-      }
-    }
-  });
-}
-
-
-  function renderDateLogs() {
-    const date = analysisDate.value;
-    dateLogs.innerHTML = "";
-
-    data.forEach((e, i) => {
-      if (e.date !== date) return;
-
-      const div = document.createElement("div");
-      div.className = "entry-card compact";
-      div.innerHTML = `
-        <div class="entry-main">
-          <span class="activity">${e.activity}</span>
-          <span>${e.value} ${e.metric === "Weight" ? "kg" : "min"}</span>
-        </div>
-        <div class="actions">
-          <span class="material-symbols-outlined edit" onclick="editEntry(${i})">edit</span>
-          <span class="material-symbols-outlined delete" onclick="deleteEntry(${i})">delete</span>
-        </div>
-      `;
-      dateLogs.appendChild(div);
-    });
   }
 
   refreshUI();
