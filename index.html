@@ -237,30 +237,44 @@
   }
 
   function renderEntries() {
-    entries.innerHTML = "";
-    const grouped = groupByActivity(data);
+  entries.innerHTML = "";
+  const grouped = groupByDateAndActivity(data);
 
-    for (const activity in grouped) {
-      const card = document.createElement("div");
-      card.className = "entry-card";
-      card.innerHTML = `<div class="entry-header">${activity}</div>`;
+  Object.keys(grouped)
+    .sort((a, b) => new Date(b) - new Date(a)) // latest date first
+    .forEach(date => {
 
-      grouped[activity].forEach(set => {
-        const row = document.createElement("div");
-        row.className = "set-row";
-        row.innerHTML = `
-          <span>${set.reps} reps × ${set.weight} kg (${set.date})</span>
-          <div class="actions">
-            <span class="material-symbols-outlined edit" onclick="editEntry(${set.index})">edit</span>
-            <span class="material-symbols-outlined delete" onclick="deleteEntry(${set.index})">delete</span>
-          </div>
-        `;
-        card.appendChild(row);
-      });
+      const dateCard = document.createElement("div");
+      dateCard.className = "entry-card";
+      dateCard.innerHTML = `<div class="entry-header">📅 ${date}</div>`;
 
-      entries.appendChild(card);
-    }
-  }
+      const activities = grouped[date];
+
+      for (const activity in activities) {
+        const exerciseCard = document.createElement("div");
+        exerciseCard.className = "entry-card";
+        exerciseCard.style.marginTop = "10px";
+        exerciseCard.innerHTML = `<div class="entry-header">${activity}</div>`;
+
+        activities[activity].forEach(set => {
+          const row = document.createElement("div");
+          row.className = "set-row";
+          row.innerHTML = `
+            <span>${set.reps} reps × ${set.weight} kg</span>
+            <div class="actions">
+              <span class="material-symbols-outlined edit" onclick="editEntry(${set.index})">edit</span>
+              <span class="material-symbols-outlined delete" onclick="deleteEntry(${set.index})">delete</span>
+            </div>
+          `;
+          exerciseCard.appendChild(row);
+        });
+
+        dateCard.appendChild(exerciseCard);
+      }
+
+      entries.appendChild(dateCard);
+    });
+}
 
   function renderDateLogs() {
     dateLogs.innerHTML = "";
@@ -349,6 +363,16 @@
     renderChart();
     renderDateLogs();
   }
+  
+  function groupByDateAndActivity(entries) {
+  return entries.reduce((acc, e, i) => {
+    if (!acc[e.date]) acc[e.date] = {};
+    if (!acc[e.date][e.activity]) acc[e.date][e.activity] = [];
+    acc[e.date][e.activity].push({ ...e, index: i });
+    return acc;
+  }, {});
+}
+
 
   refreshUI();
 </script>
