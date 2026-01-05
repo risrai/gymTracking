@@ -132,6 +132,22 @@
       padding: 10px;
       margin-top: 12px;
     }
+	
+	.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 14px;
+}
+input, select, button.primary {
+  box-sizing: border-box;
+}
+@media (min-width: 768px) {
+  .container {
+    padding: 0 24px;
+  }
+}
+
+
   </style>
 </head>
 
@@ -147,6 +163,7 @@
 
 <!-- LOG PAGE -->
 <section id="log" class="active">
+<div class="container">
   <h3>Add Activity</h3>
 
   <input type="date" id="dateInput">
@@ -168,6 +185,7 @@
 
 <!-- ANALYSIS PAGE -->
 <section id="analysis">
+<div class="container">
   <h3>Activity-wise Trend</h3>
   <select id="analysisActivity" onchange="renderChart()"></select>
   <canvas id="chart" height="220"></canvas>
@@ -175,6 +193,7 @@
   <h3>Logs by Date</h3>
   <input type="date" id="analysisDate" onchange="renderDateLogs()">
   <div id="dateLogs"></div>
+  </div>
 </section>
 
 <script>
@@ -271,28 +290,45 @@
   }
 
   function renderChart() {
-    const activity = analysisActivity.value;
-    if (!activity) return;
+  const activity = analysisActivity.value;
+  if (!activity) return;
 
-    const filtered = data.filter(d => d.activity === activity);
-    const labels = filtered.map(d => d.date);
-    const values = filtered.map(d => d.value);
+  // Filter entries for the selected activity
+  const filtered = data
+    .filter(d => d.activity === activity)
+    .sort((a, b) => new Date(a.date) - new Date(b.date)); // 👈 key fix
 
-    if (chart) chart.destroy();
+  const labels = filtered.map(d => d.date);
+  const values = filtered.map(d => d.value);
 
-    chart = new Chart(document.getElementById("chart"), {
-      type: "line",
-      data: {
-        labels,
-        datasets: [{
-          label: activity,
-          data: values,
-          borderWidth: 2,
-          fill: false
-        }]
+  if (chart) chart.destroy();
+
+  chart = new Chart(document.getElementById("chart"), {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{
+        label: activity,
+        data: values,
+        borderWidth: 2,
+        tension: 0.3,
+        fill: false
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: {
+          ticks: {
+            autoSkip: true,
+            maxTicksLimit: 6
+          }
+        }
       }
-    });
-  }
+    }
+  });
+}
+
 
   function renderDateLogs() {
     const date = analysisDate.value;
